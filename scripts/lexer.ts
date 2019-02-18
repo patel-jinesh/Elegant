@@ -38,8 +38,6 @@ export class Lexer {
             cursor += html.substring(cursor, html.length).match("^" + escape(span) + "\\s*")[0].length;
         }
 
-
-        html = html.replace(/\n/g, "<br>");
         this.v = html;
     }
 
@@ -84,68 +82,41 @@ export class Lexer {
 
         let s = "";
 
-        let inString = false;
+        let pairs = [
+            
+        ];
 
         for (let i = 0; i < code.length; i++) {
-            if (code[i] == "@" && code[i + 1] == "\"") {
-                if (s != "") {
-                    arr.push(s);
-                    s = "";
-                }
-                let t = code.substring(i, code.length).match(/@"(?:[^"]|(?:"")*)*"/)[0];
-                i += t.length - 1;
-                arr.push(t);
-                continue;
-            }
-            if (code[i] == "\"") {
-                if (s != "") {
-                    arr.push(s);
-                    s = "";
-                }
-                let t = code.substring(i, code.length).match(/"(?:\\"|[^"])*"/)[0];
-                i += t.length - 1;
-                arr.push(t);
-                continue;
-            }
-            if (code[i] == "/" && (code[i + 1] == "/" || code[i + 1] == "*")) {
-                if (s != "") {
-                    arr.push(s);
-                    s = "";
-                }
-                let t = code.substring(i, code.length).match(/\/\*(?:.|\n)*?\*\/|\/\/.*/)[0];
-                //mod = mod.replace(t, "");
-                i += t.length - 1;
-                arr.push(t);
-                continue;
+            if (s != "" && (/^(\/(\/|\*))/.test(code.substr(i, 2)) || /^("|@")/.test(code.substr(i, 2)))) {
+                arr.push(s);
+                s = "";
             }
 
-            if (code[i] == "\"" && code[i - 1] == "@") {
-                s = code.substring(i - 1, code.length).match(/@"(?:[^"]|(?:"")*)*"/)[0];
-                arr.push(s);
-                i += s.length;
-                s = "";
+            if (/^("|@")/.test(code.substr(i, 2))) {
+                let t = code.substring(i, code.length).match(/@"(?:[^"]|(?:"")*)*"|"(?:\\"|[^"])*"/)[0];
+                i += t.length;
+                arr.push(t);
+            }
+
+            if (/^(\/(\/|\*))/.test(code.substr(i, 2))) {
+                let t = code.substring(i, code.length).match(/\/\*(?:.|\n)*?\*\/|\/\/.*/)[0];
+                i += t.length;
+                arr.push(t.trim());
+            }
+
+            if (/^(\/(\/|\*))/.test(code.substr(i, 2)) || /^("|@")/.test(code.substr(i, 2))) {
+                i--;
+                continue;
             }
 
             let char = code[i];
-
-            if (char == "\"" && code[i - 1] != "\\")
-                inString = !inString;
-
-            if (inString) {
-                s += char;
-                continue;
-            } else if (char == "\"") {
-                arr.push(s + char);
-                s = "";
-                continue;
-            }
 
             if (!(" {}(),;/*+-%?:=<>[].!~&^|\n".includes(char)))
                 s += char;
             else {
                 if (s != "")
                     arr.push(s);
-                if (char != " ")
+                if (char != " " && char != "\n")
                     arr.push(char)
                 s = "";
             }
@@ -192,14 +163,8 @@ export class Lexer {
                         return !(index == i + 1);
                     });
                 }
-            } else if (arr[i] == "?" && arr[i + 1] == ".") {
-                arr[i] = "?.";
-
-                arr = arr.filter((v, index, a) => {
-                    return !(index == i + 1);
-                });
-            } else if (arr[i] == "?" && arr[i + 1] == "?") {
-                arr[i] = "??";
+            } else if (arr[i] == "?" && (arr[i + 1] == "." || arr[i + 1] == "?")) {
+                arr[i] += arr[i + 1];
 
                 arr = arr.filter((v, index, a) => {
                     return !(index == i + 1);
@@ -217,14 +182,6 @@ export class Lexer {
                     return !(index == i + 1);
                 });
             }
-        }
-
-        arr = arr.filter((v, index, a) => {
-            return v != "\n";
-        });
-
-        for (let i = 0; i < arr.length; i++) {
-            arr[i].trim();
         }
 
         return arr;

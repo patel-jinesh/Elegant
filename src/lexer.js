@@ -28,21 +28,26 @@ var Lexer = /** @class */ (function () {
             html = html.substring(0, cursor) + span + html.substring(cursor + tokenhtml.length, html.length);
             cursor += html.substring(cursor, html.length).match("^" + escape(span) + "\\s*")[0].length;
         }
-        html = html.replace(/\n/g, "<br>");
         this.v = html;
     }
     Lexer.prototype.classify = function (tokens) {
         var types = [];
         var keywords = [
-            "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char",
-            "checked", "class", "const", "continue", "decimal", "default", "delegate", "do",
-            "double", "else", "enum", "event", "explicit", "extern", "false", "finally", "fixed",
-            "float", "for", "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal",
-            "is", "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override",
-            "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed",
-            "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw",
-            "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "var",
-            "virtual", "void", "volatile", "while"
+            "abstract", "as", "base", "bool", "break", "byte", "case", "catch",
+            "char", "checked", "class", "const", "continue", "decimal", "default",
+            "delegate", "do", "double", "else", "enum", "event", "explicit", "extern",
+            "false", "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit",
+            "in", "int", "interface", "internal", "is", "lock", "long", "namespace", "new",
+            "null", "object", "operator", "out", "override", "params", "private", "protected",
+            "public", "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof", "stackalloc",
+            "static", "string", "struct", "switch", "this", "throw", "true", "try", "typeof", "uint",
+            "ulong", "unchecked", "unsafe", "ushort", "using", "using", "static", "virtual", "void",
+            "volatile", "while"
+        ];
+        var contextual = [
+            "add", "alias", "ascending", "async", "await", "by", "descending", "dynamic", "equals",
+            "from", "get", "global", "group", "into", "join", "let", "nameof", "on", "orderby", "partial",
+            "remove", "select", "set", "value", "var", "when", "where", "yield"
         ];
         for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
             var token = tokens_1[_i];
@@ -64,63 +69,33 @@ var Lexer = /** @class */ (function () {
     Lexer.prototype.split = function (code) {
         var arr = [];
         var s = "";
-        var inString = false;
+        var pairs = [];
         for (var i = 0; i < code.length; i++) {
-            if (code[i] == "@" && code[i + 1] == "\"") {
-                if (s != "") {
-                    arr.push(s);
-                    s = "";
-                }
-                var t = code.substring(i, code.length).match(/@"(?:[^"]|(?:"")*)*"/)[0];
-                i += t.length - 1;
-                arr.push(t);
-                continue;
-            }
-            if (code[i] == "\"") {
-                if (s != "") {
-                    arr.push(s);
-                    s = "";
-                }
-                var t = code.substring(i, code.length).match(/"(?:\\"|[^"])*"/)[0];
-                i += t.length - 1;
-                arr.push(t);
-                continue;
-            }
-            if (code[i] == "/" && (code[i + 1] == "/" || code[i + 1] == "*")) {
-                if (s != "") {
-                    arr.push(s);
-                    s = "";
-                }
-                var t = code.substring(i, code.length).match(/\/\*(?:.|\n)*?\*\/|\/\/.*/)[0];
-                //mod = mod.replace(t, "");
-                i += t.length - 1;
-                arr.push(t);
-                continue;
-            }
-            if (code[i] == "\"" && code[i - 1] == "@") {
-                s = code.substring(i - 1, code.length).match(/@"(?:[^"]|(?:"")*)*"/)[0];
+            if (s != "" && (/^(\/(\/|\*))/.test(code.substr(i, 2)) || /^("|@")/.test(code.substr(i, 2)))) {
                 arr.push(s);
-                i += s.length;
                 s = "";
+            }
+            if (/^("|@")/.test(code.substr(i, 2))) {
+                var t = code.substring(i, code.length).match(/@"(?:[^"]|(?:"")*)*"|"(?:\\"|[^"])*"/)[0];
+                i += t.length;
+                arr.push(t);
+            }
+            if (/^(\/(\/|\*))/.test(code.substr(i, 2))) {
+                var t = code.substring(i, code.length).match(/\/\*(?:.|\n)*?\*\/|\/\/.*/)[0];
+                i += t.length;
+                arr.push(t.trim());
+            }
+            if (/^(\/(\/|\*))/.test(code.substr(i, 2)) || /^("|@")/.test(code.substr(i, 2))) {
+                i--;
+                continue;
             }
             var char = code[i];
-            if (char == "\"" && code[i - 1] != "\\")
-                inString = !inString;
-            if (inString) {
-                s += char;
-                continue;
-            }
-            else if (char == "\"") {
-                arr.push(s + char);
-                s = "";
-                continue;
-            }
             if (!(" {}(),;/*+-%?:=<>[].!~&^|\n".includes(char)))
                 s += char;
             else {
                 if (s != "")
                     arr.push(s);
-                if (char != " ")
+                if (char != " " && char != "\n")
                     arr.push(char);
                 s = "";
             }
@@ -162,14 +137,8 @@ var Lexer = /** @class */ (function () {
                     });
                 }
             }
-            else if (arr[i] == "?" && arr[i + 1] == ".") {
-                arr[i] = "?.";
-                arr = arr.filter(function (v, index, a) {
-                    return !(index == i + 1);
-                });
-            }
-            else if (arr[i] == "?" && arr[i + 1] == "?") {
-                arr[i] = "??";
+            else if (arr[i] == "?" && (arr[i + 1] == "." || arr[i + 1] == "?")) {
+                arr[i] += arr[i + 1];
                 arr = arr.filter(function (v, index, a) {
                     return !(index == i + 1);
                 });
@@ -189,12 +158,6 @@ var Lexer = /** @class */ (function () {
         };
         for (var i = 0; i < arr.length - 1; i++) {
             _loop_1(i);
-        }
-        arr = arr.filter(function (v, index, a) {
-            return v != "\n";
-        });
-        for (var i = 0; i < arr.length; i++) {
-            arr[i].trim();
         }
         return arr;
     };

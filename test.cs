@@ -516,7 +516,7 @@ namespace ConsoleApplication1
         }
     }
 }
- 
+
 namespace Comments.XmlComments.UndocumentedKeywords
 {
     /// <summary>
@@ -560,9 +560,9 @@ namespace Comments.XmlComments.UndocumentedKeywords
 
     //General Test F. Type a very long class name, verify colorization happens correctly only upto the correct size (118324)
     class TestClassXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/*Scen8*/{ }
- 
+
     class TestClassXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX22/*Scen9*/{ }
- 
+
     class yield
     {
         void Foo<U>(__arglist)
@@ -574,13 +574,13 @@ namespace Comments.XmlComments.UndocumentedKeywords
             int j = __refvalue(tr, int);
             Params(a: t, b: t);
         }
-        void Params(ref dynamic a, out dynamic b, params dynamic[] c) {}
-        void Params(out dynamic a = 2, ref dynamic c = default(dynamic), params dynamic[][] c) {}
- 
-        public override string ToString() { return base.ToString(); } 
- 
+        void Params(ref dynamic a, out dynamic b, params dynamic[] c) { }
+        void Params(out dynamic a = 2, ref dynamic c = default(dynamic), params dynamic[][] c) { }
+
+        public override string ToString() { return base.ToString(); }
+
         public partial void OnError();
- 
+
         public partial void method()
         {
             int?[] a = new int?[5];/*[] bug*/ // YES []
@@ -620,6 +620,7 @@ namespace Comments.XmlComments.UndocumentedKeywords
             }
             IO::BinaryReader br = null;
         }
- 
+
         struct Point { public int X; public int Y; }
     }
+}

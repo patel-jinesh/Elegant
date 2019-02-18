@@ -620,7 +620,8 @@ namespace Comments.XmlComments.UndocumentedKeywords
         }
  
         struct Point { public int X; public int Y; }
-    }`
+    }
+}`
 
 let lex = new Lexer(code);
 function codeAddress() {
