@@ -1,19 +1,38 @@
+import { Tokenizer } from './tokenizer';
+import { Buffer } from './buffer';
+
 export class Lexer {
     v: string;
-    constructor(code: string) {
+    constructor(code: string, rules: RegExp[]) {
         let escape = function (string) {
             return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
         };
 
         let html = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        let buff: Buffer = new Buffer(html);
 
-        code = code.replace(/[\t]+/gi, "")
-        code = code.replace(/[ ]+/gi, " ")
-
-        let tokens = this.split(code);
+        let tokens = new Tokenizer(code).tokenize(rules);
         let types = this.classify(tokens);
 
-        let cursor = 0;
+        for (let i = 0; i < tokens.length; i++) {
+            let token = tokens[i];
+            let type = types[i];
+
+            let tokenhtml = token.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            buff.seek(/\s+/);
+
+            if (type == "none") {
+                buff.seek(new RegExp(escape(tokenhtml)));
+                continue;
+            }
+
+            let span = "<span class='" + type + "'>" + tokenhtml + "</span>";
+            buff.capture(new RegExp(escape(tokenhtml)), String, true);
+            buff.insert(span, true);
+        }
+
+        /*let cursor = 0;
 
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];
@@ -36,9 +55,9 @@ export class Lexer {
             let span = "<span class='" + type + "'>" + tokenhtml + "</span>";
             html = html.substring(0, cursor) + span + html.substring(cursor + tokenhtml.length, html.length);
             cursor += html.substring(cursor, html.length).match("^" + escape(span) + "\\s*")[0].length;
-        }
+        }*/
 
-        this.v = html;
+        this.v = buff.getData();
     }
 
     classify(tokens: string[]): string[] {
@@ -75,115 +94,5 @@ export class Lexer {
         }
 
         return types;
-    }
-
-    split(code: string): string[] {
-        let arr = [];
-
-        let s = "";
-
-        let pairs = [
-            
-        ];
-
-        for (let i = 0; i < code.length; i++) {
-            if (s != "" && (/^(\/(\/|\*))/.test(code.substr(i, 2)) || /^("|@")/.test(code.substr(i, 2)))) {
-                arr.push(s);
-                s = "";
-            }
-
-            if (/^("|@")/.test(code.substr(i, 2))) {
-                let t = code.substring(i, code.length).match(/@"(?:[^"]|(?:"")*)*"|"(?:\\"|[^"])*"/)[0];
-                i += t.length;
-                arr.push(t);
-            }
-
-            if (/^(\/(\/|\*))/.test(code.substr(i, 2))) {
-                let t = code.substring(i, code.length).match(/\/\*(?:.|\n)*?\*\/|\/\/.*/)[0];
-                i += t.length;
-                arr.push(t.trim());
-            }
-
-            if (/^(\/(\/|\*))/.test(code.substr(i, 2)) || /^("|@")/.test(code.substr(i, 2))) {
-                i--;
-                continue;
-            }
-
-            let char = code[i];
-
-            if (!(" {}(),;/*+-%?:=<>[].!~&^|\n".includes(char)))
-                s += char;
-            else {
-                if (s != "")
-                    arr.push(s);
-                if (char != " " && char != "\n")
-                    arr.push(char)
-                s = "";
-            }
-        }
-
-        for (let i = 0; i < arr.length - 1; i++) {
-            if ("/*+-%=<>!&^|".includes(arr[i])) {
-                if ("&|<>".includes(arr[i])) {
-                    if (arr[i + 1] == arr[i]) {
-                        arr[i] += arr[i];
-
-                        arr = arr.filter((v, index, a) => {
-                            return !(index == i + 1);
-                        });
-                    }
-                }
-
-                if ("+-".includes(arr[i])) {
-                    if (arr[i] == arr[i + 1] && /\w/g.test(arr[i - 1]) && !/\w/g.test(arr[i + 2])) {
-                        arr[i] += arr[i];
-                        arr = arr.filter((v, index, a) => {
-                            return !(index == i + 1);
-                        });
-                    } else if (arr[i] == arr[i + 1] && /\w/g.test(arr[i + 2]) && !/\w/g.test(arr[i - 1])) {
-                        arr[i] += arr[i];
-                        arr = arr.filter((v, index, a) => {
-                            return !(index == i + 1);
-                        });
-                    }
-                }
-
-                if (arr[i + 1] == "=") {
-                    arr[i] += "=";
-
-                    arr = arr.filter((v, index, a) => {
-                        return !(index == i + 1);
-                    });
-                }
-
-                if (arr[i] == "=" && arr[i + 1] == ">") {
-                    arr[i] = "=>";
-
-                    arr = arr.filter((v, index, a) => {
-                        return !(index == i + 1);
-                    });
-                }
-            } else if (arr[i] == "?" && (arr[i + 1] == "." || arr[i + 1] == "?")) {
-                arr[i] += arr[i + 1];
-
-                arr = arr.filter((v, index, a) => {
-                    return !(index == i + 1);
-                });
-            } else if (arr[i] == "-" && arr[i + 1] == ">") {
-                arr[i] = "->";
-
-                arr = arr.filter((v, index, a) => {
-                    return !(index == i + 1);
-                });
-            } else if (arr[i] == ":" && arr[i + 1] == ":") {
-                arr[i] = "::";
-
-                arr = arr.filter((v, index, a) => {
-                    return !(index == i + 1);
-                });
-            }
-        }
-
-        return arr;
     }
 };

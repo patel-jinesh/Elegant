@@ -1,4 +1,4 @@
-import { Buffer } from '../scripts/buffer';
+import { Tokenizer } from '../scripts/tokenizer';
 import { expect } from 'chai';
 import 'mocha';
 
@@ -626,7 +626,7 @@ namespace Comments.XmlComments.UndocumentedKeywords
         struct Point { public int X; public int Y; }
     }
 }`;
-        let buff: Buffer = new Buffer(code);
+        let buff: Tokenizer = new Tokenizer(code);
 
         let pairs = [
             /@"(?:[^"]|(?:"")*)*"|"(?:\\"|[^"])*"/,
@@ -639,21 +639,7 @@ namespace Comments.XmlComments.UndocumentedKeywords
             // /[ {}(),;*+\-%?:=<>[\]\.!~&\^|\n]|\/(?!\/|\*)/
         ];
 
-        let arr = [];
-
-        while (!buff.eob()) {
-            for (let p of pairs) {
-                buff.seek(/\s+\n?/);
-                let c = buff.capture(p, String);
-                if (c == null)
-                    continue;
-                
-                for (let v of c)
-                    arr.push(v);
-
-                break;
-            }
-        }
+        let arr = new Tokenizer(code).tokenize(pairs);
 
         arr.forEach(element => {
             console.log(element);

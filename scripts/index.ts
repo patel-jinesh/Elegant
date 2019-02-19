@@ -621,10 +621,20 @@ namespace Comments.XmlComments.UndocumentedKeywords
  
         struct Point { public int X; public int Y; }
     }
-}`
+}`;
 
-let lex = new Lexer(code);
+let tokens = [
+    /@"(?:[^"]|(?:"")*)*"|\$?"(?:\\"|[^"])*"/,
+    /\/\*(?:.|\n)*?\*\/|\/\/.*/,
+    /(\+\+|--)[ ]*([^ {}(),;/*+\-%?:=<>[\]\.!~&\^|\n"]+)[ ]*(\+\+|--)|([^ {}(),;/*+\-%?:=<>[\]\.!~&\^|\n"]+)[ ]*(\+\+|--)|(\+\+|--)[ ]*([^ {}(),;/*+\-%?:=<>[\]\.!~&\^|\n"]+)/,
+    /\d(?:[\d_]*\d|\d*)\.\d(?:[\d_]*\d|\d*)(?:e[+-]?\d(?:[\d_]*\d|\d*))?[fmd]?|0x[\da-f](?:[\d_a-f]*[\da-f]|[\da-f]*)|0b[01](?:[01_]*[01]|[01]*)|\d(?:[\d_]*\d|\d*)(?:ul|lu|l|u|f|m|d)?/i,
+    /[^ {}(),;/*+\-%?:=<>[\]\.!~&\^|\n"]+/,
+    /(<<|>>)(?![^(]*=)(?=.*;.*\n)/,
+    /[*+\-%\/=<>!&\^|]=|<<=|>>=|(?:-|=)>|\?(?:\?|\.)|&&|\|\||::|[ {}(),;*+\-%?:=<>[\]\.!~&\^|]|\/(?!\/|\*)/
+];
+
+let lex = new Lexer(code, tokens);
 function codeAddress() {
-    document.getElementsByTagName("code")[0].innerHTML = lex.v.replace(/\n/g, "<br>");
+    document.getElementsByTagName("code")[0].innerHTML = lex.v.trim();
 }
 window.onload = codeAddress;
