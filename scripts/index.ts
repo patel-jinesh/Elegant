@@ -1,4 +1,4 @@
-import { Lexer } from "./lexer";
+import { Highlighter } from "./highlighter";
 
 var code = "int myInt;\n\nmyInt = 35;\nint func() {\n\tint x = 5;\n}"
 code = `#error Error message
@@ -633,8 +633,8 @@ let tokens = [
     /[*+\-%\/=<>!&\^|]=|<<=|>>=|(?:-|=)>|\?(?:\?|\.)|&&|\|\||::|[ {}(),;*+\-%?:=<>[\]\.!~&\^|]|\/(?!\/|\*)/
 ];
 
-let lex = new Lexer(code, tokens);
+let lex = Highlighter.highlight(code, tokens);
 function codeAddress() {
-    document.getElementsByTagName("code")[0].innerHTML = lex.v.trim();
+    document.getElementsByTagName("code")[0].innerHTML = lex.trim();
 }
 window.onload = codeAddress;
