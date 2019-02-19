@@ -633,8 +633,17 @@ let tokens = [
     /[*+\-%\/=<>!&\^|]=|<<=|>>=|(?:-|=)>|\?(?:\?|\.)|&&|\|\||::|[ {}(),;*+\-%?:=<>[\]\.!~&\^|]|\/(?!\/|\*)/
 ];
 
-let lex = Highlighter.highlight(code, tokens);
+let lex = Highlighter.highlight(code, tokens).trim();
 function codeAddress() {
-    document.getElementsByTagName("code")[0].innerHTML = lex.trim();
+    document.getElementById("code").innerHTML = lex;
+    console.log(lex);
+    let lines = code.match(/\n|\r/g).length + 1;
+
+    let a = "";
+    for (let i = 1; i <= lines; i++)
+        a += i.toString() + "\n"
+
+    document.getElementsByClassName("code")[0].children[0].innerHTML = a;
+
 }
 window.onload = codeAddress;

@@ -22,7 +22,16 @@
                 padding: 10px;
                 color: #FFFFFF;
                 background: #333333;
+                display: flex;
+                line-height: 15px;
             }
+
+            .code > pre:first-child {
+                border-right: 3px solid rgba(0, 174, 255, 0.671);
+                margin-right: 10px;
+                padding-right: 3px;
+            }
+
             .pp {
                 color: mediumpurple;
             }
@@ -30,7 +39,10 @@
     </head>
     <body>
         <div class="code">
-        <pre><code>
+        <pre>
+
+        </pre>
+        <pre><code id="code">
 
         </code></pre>
         </div>

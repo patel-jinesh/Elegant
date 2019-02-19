@@ -12,9 +12,15 @@ var tokens = [
     /(<<|>>)(?![^(]*=)(?=.*;.*\n)/,
     /[*+\-%\/=<>!&\^|]=|<<=|>>=|(?:-|=)>|\?(?:\?|\.)|&&|\|\||::|[ {}(),;*+\-%?:=<>[\]\.!~&\^|]|\/(?!\/|\*)/
 ];
-var lex = highlighter_1.Highlighter.highlight(code, tokens);
+var lex = highlighter_1.Highlighter.highlight(code, tokens).trim();
 function codeAddress() {
-    document.getElementsByTagName("code")[0].innerHTML = lex.trim();
+    document.getElementById("code").innerHTML = lex;
+    console.log(lex);
+    var lines = code.match(/\n|\r/g).length + 1;
+    var a = "";
+    for (var i = 1; i <= lines; i++)
+        a += i.toString() + "\n";
+    document.getElementsByClassName("code")[0].children[0].innerHTML = a;
 }
 window.onload = codeAddress;
 //# sourceMappingURL=index.js.map
