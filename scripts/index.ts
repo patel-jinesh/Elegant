@@ -635,7 +635,8 @@ let tokens = [
 
 let lex = Highlighter.highlight(code, tokens).trim();
 function codeAddress() {
-    document.getElementById("code").innerHTML = lex;
+    let c = document.getElementsByTagName("code")[0];
+    c.innerHTML = lex;
     console.log(lex);
     let lines = code.match(/\n|\r/g).length + 1;
 
@@ -643,7 +644,11 @@ function codeAddress() {
     for (let i = 1; i <= lines; i++)
         a += i.toString() + "\n"
 
-    document.getElementsByClassName("code")[0].children[0].innerHTML = a;
+    let x = document.createElement("div");
+    x.innerText = a;
+    x.className = "lines";
+    
+    c.parentElement.insertBefore(x,c);
 
 }
 window.onload = codeAddress;

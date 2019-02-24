@@ -14,13 +14,17 @@ var tokens = [
 ];
 var lex = highlighter_1.Highlighter.highlight(code, tokens).trim();
 function codeAddress() {
-    document.getElementById("code").innerHTML = lex;
+    var c = document.getElementsByTagName("code")[0];
+    c.innerHTML = lex;
     console.log(lex);
     var lines = code.match(/\n|\r/g).length + 1;
     var a = "";
     for (var i = 1; i <= lines; i++)
         a += i.toString() + "\n";
-    document.getElementsByClassName("code")[0].children[0].innerHTML = a;
+    var x = document.createElement("div");
+    x.innerText = a;
+    x.className = "lines";
+    c.parentElement.insertBefore(x, c);
 }
 window.onload = codeAddress;
 //# sourceMappingURL=index.js.map
